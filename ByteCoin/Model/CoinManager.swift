@@ -9,6 +9,7 @@
 import Foundation
 
 protocol CoinManagerDelegate {
+    func didUpdatePrice(price: String, currency: String)
     func didFailWithError(error: Error)
 }
 
@@ -25,10 +26,7 @@ struct CoinManager {
     func getCoinPrice(for currency: String) {
         let urlString = "\(baseURL)/\(currency)?apikey=\(apiKey)"
         print(urlString)
-        performRequest(urlString: urlString)
-    }
-    
-    func performRequest(urlString : String) {
+  
         if let url = URL(string: urlString){
         let session = URLSession(configuration: .default)
             let task = session.dataTask(with: url){ (data, respose, error) in
@@ -38,13 +36,14 @@ struct CoinManager {
                 }
                 
                 if let safeData = data {
-                    let bitcoinPrice = self.parseJSON(safeData)
-                
+                    if let bitcoinPrice = self.parseJSON(safeData) {
+                        let priceString = String(format: "%.2f", bitcoinPrice)
+                        
+                        self.delegate?.didUpdatePrice(price: priceString, currency: currency)
+                    }
                 }
-
             }
             task.resume()
-            
         }
     }
     
