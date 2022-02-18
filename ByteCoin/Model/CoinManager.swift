@@ -36,14 +36,31 @@ struct CoinManager {
                     delegate?.didFailWithError(error: error!)
                     return
                 }
-                //Format the data we got back as a string to be able to print it.
-                                let dataAsString = String(data: data!, encoding: .utf8)
-                                print(dataAsString)
+                
+                if let safeData = data {
+                    let bitcoinPrice = self.parseJSON(safeData)
+                
+                }
 
             }
             task.resume()
             
         }
     }
+    
+    func parseJSON(_ data: Data) -> Double? {
+        let decoder = JSONDecoder()
+        do {
+            let decodedData = try decoder.decode(CoinData.self, from: data)
+            let lastprice = decodedData.rate
+            print(lastprice)
+            return lastprice
+        } catch {
+            delegate?.didFailWithError(error: error)
+            return nil
+        }
+    }
+    
+    
 
 }
